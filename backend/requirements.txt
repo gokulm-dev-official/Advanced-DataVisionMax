@@ -1,0 +1,13 @@
+flask
+flask-cors
+pandas
+numpy
+# scikit-learn
+google-generativeai
+fpdf
+openpyxl
+plotly
+gspread
+oauth2client
+python-dotenv
+requests

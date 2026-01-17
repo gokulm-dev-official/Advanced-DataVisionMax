@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Analytics Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.2/marked.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --panel-bg: #1e293b;
+            --accent: #4f46e5;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            color: white;
+            overflow: hidden;
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Layout */
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 240px 280px 1fr;
+            /* Sidebar, Filters, Main */
+            grid-template-rows: 60px 1fr;
+            height: 100vh;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 1024px) {
+            .grid-layout {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto 1fr;
+                height: auto;
+                overflow-y: auto;
+            }
+
+            aside {
+                display: none;
+            }
+
+            /* Hidden by default on mobile */
+            body {
+                overflow: auto;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+
+        /* Inputs */
+        select,
+        input {
+            background-color: #0f172a;
+            border: 1px solid #334155;
+            color: white;
+            padding: 8px;
+            border-radius: 6px;
+            width: 100%;
+            font-size: 0.875rem;
+        }
+
+        select:focus,
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        /* Chart Canvas */
+        .chart-box {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: 250px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="grid-layout" id="app-container">
+
+        <!-- 1. Main Navigation Sidebar -->
+        <aside class="panel m-2 mr-0 flex flex-col justify-between hidden md:flex" style="grid-row: 1 / -1;">
+            <div>
+                <div class="h-16 flex items-center px-6 border-b border-gray-700/50">
+                    <span class="text-xl font-bold tracking-tight">DataVision<span
+                            class="text-indigo-400">.AI</span></span>
+                </div>
+
+                <nav class="p-4 space-y-2">
+                    <button onclick="switchView('dashboard')"
+                        class="w-full text-left px-4 py-3 rounded-lg bg-indigo-600 text-white font-medium flex items-center gap-3 hover:bg-indigo-700">
+                        <i class="fas fa-chart-line"></i> Dashboard
+                    </button>
+                    <button onclick="switchView('cleaning')"
+                        class="w-full text-left px-4 py-3 rounded-lg text-gray-400 hover:bg-slate-800 transition flex items-center gap-3">
+                        <i class="fas fa-broom text-green-400"></i> Data Cleaning
+                    </button>
+                    <button onclick="document.getElementById('fileInput').click()"
+                        class="w-full text-left px-4 py-3 rounded-lg text-gray-400 hover:bg-slate-800 transition flex items-center gap-3">
+                        <i class="fas fa-upload"></i> Upload Data
+                    </button>
+                    <button onclick="toggleChat()"
+                        class="w-full text-left px-4 py-3 rounded-lg text-gray-400 hover:bg-slate-800 transition flex items-center gap-3">
+                        <i class="fas fa-robot text-purple-400"></i> AI Analyst
+                    </button>
+                    <a href="/about"
+                        class="w-full text-left px-4 py-3 rounded-lg text-gray-400 hover:bg-slate-800 transition flex items-center gap-3">
+                        <i class="fas fa-info-circle text-blue-400"></i> About Project
+                    </a>
+                </nav>
+            </div>
+
+            <div class="p-4 border-t border-gray-700/50">
+                <a href="/about"
+                    class="flex items-center gap-3 p-2 rounded-lg bg-slate-800/50 hover:bg-slate-700 transition cursor-pointer">
+                    <div class="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center font-bold text-xs">
+                        GM</div>
+                    <div class="overflow-hidden">
+                        <p class="text-sm font-semibold truncate">GOKUL M</p>
+                        <p class="text-xs text-gray-400">View Profile</p>
+                    </div>
+                </a>
+            </div>
+        </aside>
+
+        <!-- 2. Filter Sidebar -->
+        <aside class="panel m-2 mr-0 p-4 overflow-y-auto hidden md:block" style="grid-row: 1 / -1;">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="font-semibold text-lg"><i class="fas fa-filter mr-2 text-indigo-400"></i> Filters</h3>
+                <button onclick="resetFilters()" class="text-xs text-red-400 hover:text-white">Reset</button>
+            </div>
+
+            <div id="filter-container" class="space-y-6">
+                <div class="text-sm text-gray-500 text-center py-10">Upload a dataset to see filters</div>
+            </div>
+
+            <div class="mt-8 border-t border-gray-700 pt-6">
+                <h3 class="font-semibold text-sm mb-3">Custom Chart</h3>
+                <div class="space-y-3">
+                    <div>
+                        <label class="text-xs text-gray-400">Chart Type</label>
+                        <select id="custom-type">
+                            <option value="bar">Bar</option>
+                            <option value="line">Line</option>
+                            <option value="doughnut">Donut</option>
+                            <option value="radar">Radar</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400">X-Axis (Category)</label>
+                        <select id="custom-x"></select>
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400">Y-Axis (Value)</label>
+                        <select id="custom-y"></select>
+                    </div>
+                    <button onclick="renderCustomChart()"
+                        class="w-full py-2 bg-indigo-600 rounded text-sm hover:bg-indigo-700">Add to View</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 3. Header Info -->
+        <header
+            class="h-16 flex items-center justify-between px-8 md:col-start-3 col-span-3 bg-slate-900/50 backdrop-blur-md sticky top-0 z-10">
+            <h2 class="text-xl font-semibold">DataVision Dashboard</h2>
+            <div class="flex items-center gap-4">
+                <button onclick="downloadCleanedData()"
+                    class="hidden bg-green-900/40 border border-green-600 px-3 py-1.5 rounded hover:bg-green-900/60 transition"
+                    id="btn-download-clean">
+                    <span class="text-green-400 text-xs font-bold uppercase"><i class="fas fa-download mr-1"></i> Clean
+                        Data</span>
+                </button>
+                <button onclick="exportReport()"
+                    class="px-4 py-2 bg-indigo-600 rounded-lg text-sm hover:bg-indigo-700 transition">
+                    <i class="fas fa-file-pdf mr-2"></i> Report
+                </button>
+            </div>
+        </header>
+
+        <!-- 4. Main Dashboard Content -->
+        <main class="p-6 overflow-y-auto md:col-start-3 md:row-start-2">
+
+            <div id="welcome-message"
+                class="flex flex-col items-center justify-center h-full text-center text-gray-500 mt-20">
+                <i class="fas fa-analytics text-6xl mb-4"></i>
+                <h3 class="text-2xl font-bold text-white mb-2">No Data Available</h3>
+                <p>Upload a file or connect Google Sheets to generate the dashboard.</p>
+                <input type="file" id="fileInput" class="hidden" accept=".csv,.xlsx,.json,.xls">
+                <button onclick="document.getElementById('fileInput').click()"
+                    class="mt-6 px-6 py-3 bg-indigo-600 text-white rounded-lg">Upload Dataset</button>
+            </div>
+
+            <!-- DASHBOARD VIEW -->
+            <div id="dashboard-view" class="hidden space-y-6">
+                <!-- Row 1: KPI Cards -->
+                <div id="kpi-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+
+                <!-- Row 2: Charts -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-auto lg:h-96">
+                    <div class="panel p-4 flex flex-col h-80 lg:h-full">
+                        <h4 class="font-semibold text-sm mb-4 text-gray-300">Category Distribution</h4>
+                        <div class="flex-1 relative"><canvas id="chart-donut"></canvas></div>
+                    </div>
+                    <div class="panel p-4 lg:col-span-2 flex flex-col h-80 lg:h-full">
+                        <h4 class="font-semibold text-sm mb-4 text-gray-300">Top Performers</h4>
+                        <div class="flex-1 relative"><canvas id="chart-bar"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- Row 3: Trends & Story -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-auto lg:h-96">
+                    <div class="panel p-4 lg:col-span-2 flex flex-col h-80 lg:h-full">
+                        <h4 class="font-semibold text-sm mb-4 text-gray-300">Trend Analysis</h4>
+                        <div class="flex-1 relative"><canvas id="chart-line"></canvas></div>
+                    </div>
+                    <div
+                        class="panel p-6 overflow-y-auto bg-gradient-to-b from-purple-900/20 to-transparent border-purple-500/30 h-80 lg:h-full">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="font-bold text-purple-400"><i class="fas fa-sparkles mr-2"></i> Data Story</h4>
+                            <button onclick="generateStory()"
+                                class="text-xs bg-purple-500/20 p-1.5 rounded hover:bg-purple-500/40"><i
+                                    class="fas fa-sync"></i></button>
+                        </div>
+                        <div id="story-text" class="prose prose-invert prose-sm text-sm text-gray-300">Loading...</div>
+                    </div>
+                </div>
+                <div id="custom-charts-container" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+            </div>
+
+            <!-- CLEANING VIEW -->
+            <div id="cleaning-view" class="hidden space-y-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h3 class="text-2xl font-bold">Data Cleaning Studio</h3>
+                        <p class="text-sm text-gray-400">Optimize your dataset for better insights.</p>
+                    </div>
+                    <div class="space-x-2">
+                        <button onclick="performAction('drop_duplicates')"
+                            class="bg-orange-600/80 px-4 py-2 rounded hover:bg-orange-600 text-sm font-medium transition">Remove
+                            Duplicates</button>
+                        <button onclick="performAction('fill_missing_mean')"
+                            class="bg-blue-600/80 px-4 py-2 rounded hover:bg-blue-600 text-sm font-medium transition">Fill
+                            Missing (Mean)</button>
+                    </div>
+                </div>
+
+                <div class="panel p-6">
+                    <h4 class="mb-4 font-bold text-gray-300 uppercase text-xs tracking-wider">Column Management</h4>
+                    <div id="cleaning-columns" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Injected Columns -->
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- AI Chatbot -->
+    <div class="fixed bottom-6 right-8 z-50 flex flex-col items-end">
+        <div id="chat-panel"
+            class="mb-4 w-80 md:w-96 h-[500px] panel flex flex-col hidden shadow-2xl border-indigo-500/50">
+            <div class="p-4 bg-indigo-600/90 rounded-t-xl flex justify-between items-center text-white">
+                <span class="font-bold flex items-center gap-2"><i class="fas fa-robot"></i> AI Analyst</span>
+                <button onclick="toggleChat()"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-900/50">
+                <div class="flex gap-2">
+                    <div class="bg-slate-700 p-2 rounded-lg rounded-tl-none text-sm max-w-[85%]">
+                        Hi! I can analyze your data or help you clean it. Try saying "Remove column Name".
+                    </div>
+                </div>
+            </div>
+            <div class="p-3 border-t border-gray-700 bg-slate-800 rounded-b-xl">
+                <div class="flex gap-2">
+                    <input type="text" id="chat-input" placeholder="Ask or command..."
+                        onkeypress="handleChatEnter(event)">
+                    <button onclick="sendMessage()" class="p-2 text-indigo-400 hover:text-white"><i
+                            class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+        <button onclick="toggleChat()"
+            class="w-14 h-14 bg-indigo-600 hover:bg-indigo-500 rounded-full shadow-lg flex items-center justify-center text-white text-2xl transition hover:scale-110">
+            <i class="fas fa-comment-dots"></i>
+        </button>
+    </div>
+
+    <!-- Modals -->
+    <div id="sheetModal" class="fixed inset-0 bg-black/80 hidden z-50 flex items-center justify-center">
+        <div class="panel p-8 w-full max-w-md">
+            <h3 class="text-lg font-bold mb-4">Google Sheet Link</h3>
+            <input type="text" id="sheetUrl" placeholder="https://docs.google.com/spreadsheets/d/..." class="mb-4">
+            <button onclick="connectGoogleSheet()"
+                class="w-full py-2 bg-green-600 rounded hover:bg-green-700">Connect</button>
+            <button onclick="toggleSheetModal()" class="w-full mt-2 py-2 text-gray-400 hover:text-white">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://127.0.0.1:5000';
+        let sessionId = 'session_' + Date.now();
+        let chartInstances = {};
+        let currentFilters = {};
+        let globalDataCols = [];
+
+        // === Navigation ===
+        function switchView(view) {
+            document.getElementById('dashboard-view').classList.add('hidden');
+            document.getElementById('cleaning-view').classList.add('hidden');
+
+            if (view === 'dashboard') document.getElementById('dashboard-view').classList.remove('hidden');
+            if (view === 'cleaning') {
+                document.getElementById('cleaning-view').classList.remove('hidden');
+                renderCleaningUI();
+            }
+        }
+
+        // === 1. Initialization & Upload === //
+        document.getElementById('fileInput').addEventListener('change', async (e) => {
+            if (!e.target.files.length) return;
+            const formData = new FormData();
+            formData.append('file', e.target.files[0]);
+            formData.append('session_id', sessionId);
+
+            try {
+                const res = await fetch(`${API_URL}/upload`, { method: 'POST', body: formData });
+                if (!res.ok) throw new Error("Upload Failed");
+
+                // Load dashboard first to populate globalDataCols
+                await loadFilters();
+                await loadDashboard();
+            } catch (e) { alert(e.message); }
+        });
+
+        // === 2. Filters Logic === //
+        async function loadFilters() {
+            try {
+                const res = await fetch(`${API_URL}/get-filters?session_id=${sessionId}`);
+                if (!res.ok) return;
+                const filters = await res.json();
+
+                const container = document.getElementById('filter-container');
+                container.innerHTML = '';
+
+                Object.keys(filters).forEach(col => {
+                    const wrapper = document.createElement('div');
+                    wrapper.innerHTML = `
+                        <label class="text-xs text-gray-400 uppercase font-semibold mb-1 block">${col}</label>
+                        <select onchange="applyFilter('${col}', this.value)">
+                            ${filters[col].map(val => `<option value="${val}">${val}</option>`).join('')}
+                        </select>
+                    `;
+                    container.appendChild(wrapper);
+                });
+            } catch (e) { console.error("Filter load error", e); }
+        }
+
+        function applyFilter(col, val) {
+            currentFilters[col] = val;
+            loadDashboard();
+        }
+
+        function resetFilters() {
+            currentFilters = {};
+            document.querySelectorAll('#filter-container select').forEach(s => s.value = 'All');
+            loadDashboard();
+        }
+
+        // === 3. Dashboard Data & Charts === //
+        async function loadDashboard() {
+            document.getElementById('welcome-message').classList.add('hidden');
+            document.getElementById('dashboard-view').classList.remove('hidden');
+            if (document.getElementById('btn-download-clean'))
+                document.getElementById('btn-download-clean').classList.remove('hidden');
+
+            const filterQuery = encodeURIComponent(JSON.stringify(currentFilters));
+            const res = await fetch(`${API_URL}/analysis?session_id=${sessionId}&filters=${filterQuery}`);
+            const data = await res.json();
+
+            globalDataCols = data.columns;
+            populateCustomSelectors();
+
+            // Render KPIs
+            const kpiContainer = document.getElementById('kpi-grid');
+            kpiContainer.innerHTML = '';
+            Object.entries(data.kpis).slice(0, 4).forEach(([key, stats]) => {
+                kpiContainer.innerHTML += `
+                    <div class="panel p-5 border-l-4 border-indigo-500">
+                        <div class="text-gray-400 text-xs uppercase font-bold text-ellipsis overflow-hidden whitespace-nowrap">${key}</div>
+                        <div class="text-2xl font-bold text-white mt-1">${stats.sum.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
+                        <div class="flex justify-between mt-2 text-xs">
+                             <span class="text-slate-500">Avg: ${stats.mean.toFixed(1)}</span>
+                             <span class="${stats.trend === 'up' ? 'text-green-400' : 'text-red-400'}">
+                                ${stats.trend === 'up' ? '▲' : '▼'} Trend
+                             </span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Prepare Data for Charts
+            const numericCols = Object.keys(data.kpis);
+            const labelCol = data.columns.find(c => !numericCols.includes(c)) || 'Index';
+
+            const chartLabels = data.data[labelCol].slice(0, 20);
+            const chartData1 = data.data[numericCols[0]].slice(0, 20);
+            const chartData2 = numericCols.length > 1 ? data.data[numericCols[1]].slice(0, 20) : chartData1;
+
+            renderChart('chart-donut', 'doughnut', chartLabels.slice(0, 5), chartData1.slice(0, 5), 'Top 5 Distribution');
+            renderChart('chart-bar', 'bar', chartLabels, chartData1, numericCols[0], 'y');
+            renderChart('chart-line', 'line', chartLabels, chartData2, numericCols[1] || numericCols[0]);
+
+            generateStory();
+        }
+
+        function renderChart(canvasId, type, labels, dataPoints, label, indexAxis = 'x') {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            if (chartInstances[canvasId]) chartInstances[canvasId].destroy();
+
+            const colors = ['#4f46e5', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'];
+
+            chartInstances[canvasId] = new Chart(ctx, {
+                type: type,
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: label,
+                        data: dataPoints,
+                        backgroundColor: type === 'doughnut' ? colors : '#6366f1',
+                        borderColor: '#818cf8',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        fill: type === 'line'
+                    }]
+                },
+                options: {
+                    indexAxis: indexAxis,
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: type === 'doughnut', position: 'right' } },
+                    scales: type === 'doughnut' ? {} : {
+                        x: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+                        y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } }
+                    }
+                }
+            });
+        }
+
+        // === 4. Custom Charts Logic === //
+        function populateCustomSelectors() {
+            const xSelect = document.getElementById('custom-x');
+            const ySelect = document.getElementById('custom-y');
+            if (xSelect.options.length > 0) return;
+
+            globalDataCols.forEach(c => {
+                xSelect.innerHTML += `<option value="${c}">${c}</option>`;
+                ySelect.innerHTML += `<option value="${c}">${c}</option>`;
+            });
+        }
+
+        async function renderCustomChart() {
+            const type = document.getElementById('custom-type').value;
+            const xCol = document.getElementById('custom-x').value;
+            const yCol = document.getElementById('custom-y').value;
+
+            const id = 'custom-' + Date.now();
+            const container = document.getElementById('custom-charts-container');
+            const wrapper = document.createElement('div');
+            wrapper.className = 'panel p-4 h-80 flex flex-col relative';
+            wrapper.innerHTML = `
+                <div class="flex justify-between mb-2">
+                    <h4 class="font-semibold text-sm text-gray-300">Analysis: ${xCol} vs ${yCol}</h4>
+                    <button onclick="this.parentElement.parentElement.remove()" class="text-red-400 hover:text-white"><i class="fas fa-trash"></i></button>
+                </div>
+                <div class="flex-1 relative"><canvas id="${id}"></canvas></div>
+            `;
+            container.appendChild(wrapper);
+
+            const res = await fetch(`${API_URL}/analysis?session_id=${sessionId}`);
+            const data = await res.json();
+
+            const labels = data.data[xCol].slice(0, 30);
+            const points = data.data[yCol].slice(0, 30);
+
+            new Chart(document.getElementById(id), {
+                type: type,
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: yCol,
+                        data: points,
+                        backgroundColor: '#f472b6',
+                        borderColor: '#ec4899'
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        // === 5. Cleaning Logic === //
+        function renderCleaningUI() {
+            const container = document.getElementById('cleaning-columns');
+            container.innerHTML = globalDataCols.map(col => `
+                <div class="bg-slate-800 p-3 rounded flex justify-between items-center border border-gray-700">
+                    <span class="text-sm font-mono truncate" title="${col}">${col}</span>
+                    <button onclick="performAction('drop_column', '${col}')" class="text-red-400 hover:text-red-300 text-xs bg-red-900/20 px-2 py-1 rounded">
+                        <i class="fas fa-trash"></i> Drop
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        async function performAction(action, target = null) {
+            const res = await fetch(`${API_URL}/perform_cleaning`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ session_id: sessionId, action: action, target: target })
+            });
+            const data = await res.json();
+
+            if (data.error) alert('Error: ' + data.error);
+            else {
+                alert('Success: ' + data.message);
+                globalDataCols = data.columns;
+                renderCleaningUI();
+                loadDashboard(); // Refresh dash
+            }
+        }
+
+        function downloadCleanedData() {
+            window.location.href = `${API_URL}/download-data?session_id=${sessionId}`;
+        }
+
+        // === 6. Story, Chat, Sheets === //
+        async function generateStory() {
+            const res = await fetch(`${API_URL}/generate-story`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ session_id: sessionId })
+            });
+            const data = await res.json();
+            document.getElementById('story-text').innerHTML = marked.parse(data.story);
+        }
+
+        function toggleChat() { document.getElementById('chat-panel').classList.toggle('hidden'); }
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const msg = input.value;
+            if (!msg) return;
+
+            const chatDiv = document.getElementById('chat-messages');
+            chatDiv.innerHTML += `<div class="text-right text-sm text-white bg-indigo-600 p-2 rounded-lg self-end ml-auto mb-2 max-w-[80%]">${msg}</div>`;
+            input.value = '';
+
+            const res = await fetch(`${API_URL}/ai-insight`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ session_id: sessionId, query: msg })
+            });
+            const data = await res.json();
+            chatDiv.innerHTML += `<div class="text-left text-sm text-gray-300 bg-slate-700 p-2 rounded-lg mr-auto mb-2 max-w-[85%]">${marked.parse(data.response)}</div>`;
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+
+            if (data.response.includes('Removed column')) {
+                loadDashboard();
+            }
+        }
+        function handleChatEnter(e) { if (e.key === 'Enter') sendMessage(); }
+
+        function toggleSheetModal() { document.getElementById('sheetModal').classList.toggle('hidden'); }
+        async function connectGoogleSheet() {
+            const url = document.getElementById('sheetUrl').value;
+            if (!url) return alert('Please enter a URL');
+            toggleSheetModal();
+            try {
+                const res = await fetch(`${API_URL}/google-sheet`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ session_id: sessionId, url: url })
+                });
+                if (!res.ok) throw new Error((await res.json()).error);
+                await loadFilters();
+                await loadDashboard();
+            } catch (err) { alert(err.message); }
+        }
+
+        async function exportReport() {
+            const res = await fetch(`${API_URL}/export-report`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ session_id: sessionId })
+            });
+            if (res.ok) {
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url; a.download = 'Report.pdf'; a.click();
+            }
+        }
+    </script>
+</body>
+
+</html>

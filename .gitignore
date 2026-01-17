@@ -1,0 +1,6 @@
+.env
+DataVision-AI-Upload.zip
+**/__pycache__/
+**/uploads/
+**/reports/
+.vercel
