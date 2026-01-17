@@ -128,6 +128,10 @@
                         class="w-full text-left px-4 py-3 rounded-lg text-gray-400 hover:bg-slate-800 transition flex items-center gap-3">
                         <i class="fas fa-upload"></i> Upload Data
                     </button>
+                    <button onclick="toggleSheetModal()"
+                        class="w-full text-left px-4 py-3 rounded-lg text-gray-400 hover:bg-slate-800 transition flex items-center gap-3">
+                        <i class="fas fa-link text-green-400"></i> Google Sheet
+                    </button>
                     <button onclick="toggleChat()"
                         class="w-full text-left px-4 py-3 rounded-lg text-gray-400 hover:bg-slate-800 transition flex items-center gap-3">
                         <i class="fas fa-robot text-purple-400"></i> AI Analyst
@@ -327,7 +331,7 @@
     </div>
 
     <script>
-        const API_URL = 'http://127.0.0.1:5000';
+        const API_URL = '';
         let sessionId = 'session_' + Date.now();
         let chartInstances = {};
         let currentFilters = {};
