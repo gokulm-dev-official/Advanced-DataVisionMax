@@ -9,177 +9,158 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-dark: #0f172a;
+            --panel-bg: #1e293b;
+            --accent: #4f46e5;
+            --text-muted: #94a3b8;
+        }
+
         body {
             font-family: 'Outfit', sans-serif;
-            background-color: #f8fafc;
-            color: #1e293b;
+            background-color: var(--bg-dark);
+            color: white;
         }
 
         .card-shadow {
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .gradient-bg {
-            background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+        .glass-panel {
+            background: var(--panel-bg);
+            border-radius: 2rem;
         }
 
         .pill {
-            background: #0f172a;
-            color: white;
+            background: rgba(79, 70, 229, 0.1);
+            color: #818cf8;
             padding: 6px 16px;
             border-radius: 9999px;
             font-size: 0.75rem;
             font-weight: 600;
             display: inline-block;
             margin: 4px;
+            border: 1px solid rgba(79, 70, 229, 0.2);
         }
     </style>
 </head>
 
-<body class="min-h-screen flex flex-col items-center justify-center p-6 bg-slate-50 text-slate-900">
+<body class="min-h-screen flex flex-col items-center justify-center p-6 text-slate-200">
 
     <!-- Back Button -->
     <a href="/dashboard"
-        class="absolute top-8 left-8 text-slate-500 hover:text-indigo-600 transition flex items-center gap-2 font-medium">
+        class="absolute top-8 left-8 text-slate-400 hover:text-indigo-400 transition flex items-center gap-2 font-medium">
         <i class="fas fa-arrow-left"></i> Back to Dashboard
     </a>
 
     <!-- Main Profile Card -->
-    <div class="w-full max-w-4xl bg-white rounded-[2rem] card-shadow overflow-hidden p-12 text-center relative mb-8">
-        <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
+    <div
+        class="w-full max-w-4xl glass-panel card-shadow overflow-hidden p-8 md:p-12 text-center relative mb-8 mt-16 md:mt-0">
+        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
 
-        <div class="inline-block bg-blue-50 text-blue-600 px-4 py-1 rounded-full text-xs font-bold tracking-wider uppercase mb-6"
-            id="p-role-tag">
+        <div
+            class="inline-block bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-4 py-1 rounded-full text-xs font-bold tracking-wider uppercase mb-6">
             Lead Architect
         </div>
 
-        <h1 class="text-6xl font-extrabold text-slate-900 mb-2 tracking-tight" id="p-name">GOKUL M</h1>
-        <p class="text-xl text-slate-500 font-medium mb-8" id="p-role-long">Full Stack Engineer & AI Researcher</p>
+        <h1 class="text-5xl md:text-6xl font-extrabold text-white mb-2 tracking-tight">GOKUL M</h1>
+        <p class="text-xl text-slate-400 font-medium mb-8">Full Stack Engineer & AI Researcher</p>
 
-        <p class="text-slate-600 italic max-w-2xl mx-auto text-lg leading-relaxed mb-10" id="p-bio">
+        <p class="text-slate-300 italic max-w-2xl mx-auto text-lg leading-relaxed mb-10">
             "I create clean, modern websites using high-performance technologies and enjoy building impactful AI
             healthcare solutions."
         </p>
 
-        <div class="flex justify-center gap-4">
-            <a id="lnk-github" href="#" target="_blank"
-                class="flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-lg font-bold hover:bg-slate-800 transition">
+        <div class="flex flex-col md:flex-row justify-center gap-4">
+            <a href="https://github.com/gokulm-dev-official" target="_blank"
+                class="flex items-center justify-center gap-2 bg-slate-800 text-white px-6 py-3 rounded-lg font-bold hover:bg-slate-700 transition border border-gray-700">
                 <i class="fab fa-github text-xl"></i> GitHub
             </a>
-            <a id="lnk-linkedin" href="#" target="_blank"
-                class="flex items-center gap-2 bg-[#0077b5] text-white px-6 py-3 rounded-lg font-bold hover:bg-[#006399] transition">
+            <a href="https://linkedin.com/in/gokul-m" target="_blank"
+                class="flex items-center justify-center gap-2 bg-[#0a66c2] text-white px-6 py-3 rounded-lg font-bold hover:bg-[#004182] transition">
                 <i class="fab fa-linkedin text-xl"></i> LinkedIn
             </a>
-            <a id="lnk-email" href="mailto:"
-                class="flex items-center gap-2 bg-red-500 text-white px-6 py-3 rounded-lg font-bold hover:bg-red-600 transition">
+            <a href="mailto:gokulmahalingam364@gmail.com"
+                class="flex items-center justify-center gap-2 bg-rose-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-rose-700 transition">
                 <i class="fas fa-envelope text-xl"></i> Gmail
             </a>
         </div>
     </div>
 
     <!-- Details Grid -->
-    <div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
 
         <!-- Contact Registry -->
-        <div class="bg-white rounded-[2rem] p-8 card-shadow">
+        <div class="glass-panel p-8 card-shadow">
             <div class="flex items-center gap-3 mb-6">
-                <i class="far fa-address-card text-2xl text-blue-600"></i>
-                <h3 class="text-xl font-bold">Communication Registry</h3>
+                <i class="far fa-address-card text-2xl text-indigo-400"></i>
+                <h3 class="text-xl font-bold text-white">Communication Registry</h3>
             </div>
 
             <div class="space-y-6">
-                <div class="bg-slate-50 p-4 rounded-xl flex items-center gap-4">
-                    <div
-                        class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm text-slate-700">
+                <div class="bg-slate-800/50 p-4 rounded-xl flex items-center gap-4 border border-gray-700/50">
+                    <div class="w-10 h-10 bg-slate-700 rounded-lg flex items-center justify-center text-indigo-300">
                         <i class="fas fa-envelope"></i>
                     </div>
-                    <div>
-                        <div class="text-xs text-slate-400 font-bold uppercase tracking-wider">Primary Gmail</div>
-                        <div class="font-semibold text-slate-800" id="c-email">gokul@example.com</div>
+                    <div class="overflow-hidden">
+                        <div class="text-xs text-slate-500 font-bold uppercase tracking-wider">Primary Gmail</div>
+                        <div class="font-semibold text-slate-200 truncate">gokulmahalingam364@gmail.com</div>
                     </div>
                 </div>
 
-                <div class="bg-slate-50 p-4 rounded-xl flex items-center gap-4">
-                    <div
-                        class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm text-slate-700">
+                <div class="bg-slate-800/50 p-4 rounded-xl flex items-center gap-4 border border-gray-700/50">
+                    <div class="w-10 h-10 bg-slate-700 rounded-lg flex items-center justify-center text-indigo-300">
                         <i class="fas fa-phone"></i>
                     </div>
                     <div>
-                        <div class="text-xs text-slate-400 font-bold uppercase tracking-wider">Mobile Terminal</div>
-                        <div class="font-semibold text-slate-800" id="c-phone">+91 0000000000</div>
+                        <div class="text-xs text-slate-500 font-bold uppercase tracking-wider">Mobile Terminal</div>
+                        <div class="font-semibold text-slate-200">+91 9342099745</div>
                     </div>
                 </div>
 
-                <div class="bg-slate-50 p-4 rounded-xl flex items-center gap-4">
-                    <div
-                        class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm text-slate-700">
+                <div class="bg-slate-800/50 p-4 rounded-xl flex items-center gap-4 border border-gray-700/50">
+                    <div class="w-10 h-10 bg-slate-700 rounded-lg flex items-center justify-center text-indigo-300">
                         <i class="fas fa-laptop-code"></i>
                     </div>
                     <div>
-                        <div class="text-xs text-slate-400 font-bold uppercase tracking-wider">Project Focus</div>
-                        <div class="font-semibold text-slate-800 italic" id="c-focus">Project Name</div>
+                        <div class="text-xs text-slate-500 font-bold uppercase tracking-wider">Project Focus</div>
+                        <div class="font-semibold text-slate-200 italic">DataVision AI Systems</div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Skills -->
-        <div class="bg-white rounded-[2rem] p-8 card-shadow">
+        <div class="glass-panel p-8 card-shadow">
             <div class="flex items-center gap-3 mb-6">
                 <i class="fas fa-bolt text-2xl text-yellow-500"></i>
-                <h3 class="text-xl font-bold">System Bio & Skills</h3>
+                <h3 class="text-xl font-bold text-white">System Bio & Skills</h3>
             </div>
 
-            <p class="text-slate-500 text-sm leading-relaxed mb-6" id="p-bio-short">
+            <p class="text-slate-400 text-sm leading-relaxed mb-6">
                 Passionate developer specialized in building AI-integrated medical healthcare systems and
-                high-performance web applications.
+                high-performance web applications. Focused on scalable architecture and seamless user experiences.
             </p>
 
-            <div class="text-xs text-blue-500 font-bold uppercase tracking-wider mb-4">Core Competencies</div>
-            <div id="skills-container" class="flex flex-wrap">
-                <!-- Skills injected here -->
+            <div class="text-xs text-indigo-400 font-bold uppercase tracking-wider mb-4">Core Competencies</div>
+            <div class="flex flex-wrap">
+                <span class="pill">Python</span>
+                <span class="pill">Generative AI</span>
+                <span class="pill">Flask</span>
+                <span class="pill">Data Science</span>
+                <span class="pill">React / JS</span>
+                <span class="pill">Cloud Arch</span>
+                <span class="pill">System Design</span>
             </div>
         </div>
 
     </div>
 
-    <div class="mt-12 text-center text-slate-400 text-xs font-semibold tracking-widest uppercase">
-        Proprietary Design By <span id="footer-name">GOKUL M</span> &copy; 2026
+    <div class="mt-2 text-center text-slate-600 text-xs font-semibold tracking-widest uppercase pb-8">
+        Proprietary Design By <span>GOKUL M</span> &copy; 2026
     </div>
 
-    <script>
-        // Fetch User Config
-        fetch('http://127.0.0.1:5000/profile-config')
-            .then(res => res.json())
-            .then(data => {
-                // Header
-                document.getElementById('p-name').textContent = data.name;
-                document.getElementById('footer-name').textContent = data.name;
-                document.getElementById('p-role-tag').textContent = data.role.split('&')[0].trim(); // Short role
-                document.getElementById('p-role-long').textContent = data.role;
-                document.getElementById('p-bio').textContent = `"${data.bio}"`;
-                document.getElementById('p-bio-short').textContent = data.bio;
-
-                // Links
-                document.getElementById('lnk-github').href = data.github;
-                document.getElementById('lnk-linkedin').href = data.linkedin;
-                document.getElementById('lnk-email').href = `mailto:${data.email}`;
-
-                // Contact
-                document.getElementById('c-email').textContent = data.email;
-                document.getElementById('c-phone').textContent = data.phone;
-                document.getElementById('c-focus').textContent = data.focus;
-
-                // Skills
-                const container = document.getElementById('skills-container');
-                data.skills.forEach(skill => {
-                    const span = document.createElement('span');
-                    span.className = 'pill';
-                    span.textContent = skill.trim();
-                    container.appendChild(span);
-                });
-            });
-    </script>
 </body>
 
 </html>
