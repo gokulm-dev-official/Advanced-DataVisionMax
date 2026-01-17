@@ -6,8 +6,8 @@ numpy
 google-generativeai
 fpdf
 openpyxl
-plotly
-gspread
-oauth2client
+# plotly
+# gspread
+# oauth2client
 python-dotenv
 requests
