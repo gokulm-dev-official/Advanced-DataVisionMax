@@ -73,7 +73,7 @@ def get_profile_config():
     return jsonify({
         "name": os.getenv("AUTHOR_NAME", "GOKUL M"),
         "role": os.getenv("AUTHOR_ROLE", "Lead Architect"),
-        "email": os.getenv("AUTHOR_EMAIL", "gokulmahalingam364@gmail.com"),
+        "email": os.getenv("AUTHOR_EMAIL", "gokulxmg26@gmail.com"),
         "phone": os.getenv("AUTHOR_PHONE", "9342099745"),
         "bio": os.getenv("AUTHOR_BIO", "Passionate AI Developer"),
         "focus": os.getenv("PROJECT_FOCUS", "AI Systems"),
