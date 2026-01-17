@@ -107,32 +107,49 @@
 
     <div class="grid-layout" id="app-container">
 
-        <!-- 1. Main Navigation Sidebar -->
-        <aside class="panel m-2 mr-0 flex flex-col justify-between hidden md:flex" style="grid-row: 1 / -1;">
+        <!-- Mobile Header (Visible only on mobile) -->
+        <header
+            class="md:hidden h-16 bg-slate-900 border-b border-gray-800 flex items-center justify-between px-4 sticky top-0 z-40">
+            <span class="text-lg font-bold">DataVision<span class="text-indigo-400">.AI</span></span>
+            <button onclick="toggleMobileMenu()" class="text-gray-300 hover:text-white">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+        </header>
+
+        <!-- Mobile Sidebar Overlay -->
+        <div id="mobile-sidebar-overlay" onclick="toggleMobileMenu()"
+            class="fixed inset-0 bg-black/80 z-40 hidden transition-opacity lg:hidden"></div>
+
+        <!-- 1. Main Navigation Sidebar (Desktop & Mobile Drawer) -->
+        <aside id="main-sidebar"
+            class="fixed inset-y-0 left-0 w-64 bg-[#1e293b] transform -translate-x-full transition-transform duration-300 z-50 md:translate-x-0 md:static md:block border-r border-gray-800/50 flex flex-col justify-between"
+            style="grid-row: 1 / -1;">
             <div>
-                <div class="h-16 flex items-center px-6 border-b border-gray-700/50">
+                <div class="h-16 flex items-center px-6 border-b border-gray-700/50 justify-between">
                     <span class="text-xl font-bold tracking-tight">DataVision<span
                             class="text-indigo-400">.AI</span></span>
+                    <button onclick="toggleMobileMenu()" class="md:hidden text-gray-400"><i
+                            class="fas fa-times"></i></button>
                 </div>
 
                 <nav class="p-4 space-y-2">
-                    <button onclick="switchView('dashboard')"
+                    <button onclick="switchView('dashboard'); toggleMobileMenu()"
                         class="w-full text-left px-4 py-3 rounded-lg bg-indigo-600 text-white font-medium flex items-center gap-3 hover:bg-indigo-700">
                         <i class="fas fa-chart-line"></i> Dashboard
                     </button>
-                    <button onclick="switchView('cleaning')"
+                    <button onclick="switchView('cleaning'); toggleMobileMenu()"
                         class="w-full text-left px-4 py-3 rounded-lg text-gray-400 hover:bg-slate-800 transition flex items-center gap-3">
                         <i class="fas fa-broom text-green-400"></i> Data Cleaning
                     </button>
-                    <button onclick="document.getElementById('fileInput').click()"
+                    <button onclick="document.getElementById('fileInput').click(); toggleMobileMenu()"
                         class="w-full text-left px-4 py-3 rounded-lg text-gray-400 hover:bg-slate-800 transition flex items-center gap-3">
                         <i class="fas fa-upload"></i> Upload Data
                     </button>
-                    <button onclick="toggleSheetModal()"
+                    <button onclick="toggleSheetModal(); toggleMobileMenu()"
                         class="w-full text-left px-4 py-3 rounded-lg text-gray-400 hover:bg-slate-800 transition flex items-center gap-3">
                         <i class="fas fa-link text-green-400"></i> Google Sheet
                     </button>
-                    <button onclick="toggleChat()"
+                    <button onclick="toggleChat(); toggleMobileMenu()"
                         class="w-full text-left px-4 py-3 rounded-lg text-gray-400 hover:bg-slate-800 transition flex items-center gap-3">
                         <i class="fas fa-robot text-purple-400"></i> AI Analyst
                     </button>
@@ -156,7 +173,7 @@
             </div>
         </aside>
 
-        <!-- 2. Filter Sidebar -->
+        <!-- 2. Filter Sidebar (Hidden on Mobile for now, simpler UI) -->
         <aside class="panel m-2 mr-0 p-4 overflow-y-auto hidden md:block" style="grid-row: 1 / -1;">
             <div class="flex items-center justify-between mb-6">
                 <h3 class="font-semibold text-lg"><i class="fas fa-filter mr-2 text-indigo-400"></i> Filters</h3>
@@ -193,9 +210,9 @@
             </div>
         </aside>
 
-        <!-- 3. Header Info -->
+        <!-- 3. Desktop Header Info -->
         <header
-            class="h-16 flex items-center justify-between px-8 md:col-start-3 col-span-3 bg-slate-900/50 backdrop-blur-md sticky top-0 z-10">
+            class="h-16 hidden md:flex items-center justify-between px-8 md:col-start-3 col-span-3 bg-slate-900/50 backdrop-blur-md sticky top-0 z-10">
             <h2 class="text-xl font-semibold">DataVision Dashboard</h2>
             <div class="flex items-center gap-4">
                 <button onclick="downloadCleanedData()"
@@ -602,20 +619,59 @@
         function handleChatEnter(e) { if (e.key === 'Enter') sendMessage(); }
 
         function toggleSheetModal() { document.getElementById('sheetModal').classList.toggle('hidden'); }
+        // === Mobile Menu ===
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('main-sidebar');
+            const overlay = document.getElementById('mobile-sidebar-overlay');
+            const isClosed = sidebar.classList.contains('-translate-x-full');
+
+            if (isClosed) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
+
         async function connectGoogleSheet() {
             const url = document.getElementById('sheetUrl').value;
-            if (!url) return alert('Please enter a URL');
-            toggleSheetModal();
+            if (!url) return alert('Please enter a Google Sheet URL');
+
+            // Validate basic URL structure
+            if (!url.includes('docs.google.com/spreadsheets/d/')) {
+                return alert('Invalid URL. Please make sure it is a Google Sheet URL (e.g., docs.google.com/spreadsheets/d/...)');
+            }
+
+            const btn = document.querySelector('#sheetModal button:first-of-type');
+            const originalText = btn.innerText;
+            btn.innerText = 'Connecting...';
+            btn.disabled = true;
+
             try {
                 const res = await fetch(`${API_URL}/google-sheet`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ session_id: sessionId, url: url })
                 });
-                if (!res.ok) throw new Error((await res.json()).error);
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    toggleSheetModal();
+                    throw new Error(data.error || "Failed to connect. Please ensure the Sheet is 'Anyone with the link can view'.");
+                }
+
+                toggleSheetModal();
+                alert('Success! ' + data.message);
                 await loadFilters();
                 await loadDashboard();
-            } catch (err) { alert(err.message); }
+            } catch (err) {
+                alert('Error: ' + err.message);
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
         }
 
         async function exportReport() {
