@@ -18,9 +18,16 @@ app = Flask(__name__, static_folder="../frontend", static_url_path="")
 CORS(app)
 
 # Configuration
+import tempfile
+
+# Configuration
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')
-REPORTS_FOLDER = os.path.join(BASE_DIR, 'reports')
+
+# Use system temp directory for file operations (required for Vercel/Lambda)
+TEMP_DIR = tempfile.gettempdir()
+UPLOAD_FOLDER = os.path.join(TEMP_DIR, 'uploads')
+REPORTS_FOLDER = os.path.join(TEMP_DIR, 'reports')
+
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(REPORTS_FOLDER, exist_ok=True)
 
